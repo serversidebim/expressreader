@@ -1,0 +1,24 @@
+{
+    "name": "serversidebim/expressreader",
+    "description": "Read Express files",
+    "keywords": ["Express", "STEP", "JSON"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Maarten Veerman",
+            "email": "mtveerman@gmail.com"
+        }
+    ],
+    "type": "project",
+    "require": {
+		"php": ">=5.4"
+    },
+	"require-dev": {
+		"phpunit/phpunit": "5.2.*"
+    },
+	"autoload": {
+        "psr-4": {
+            "Serversidebim\\ExpressReader\\": "src/"
+        }
+    }
+}
