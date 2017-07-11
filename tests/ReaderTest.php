@@ -73,7 +73,8 @@ class ReaderTest extends PHPUnit_Framework_TestCase {
         $ifcroot = $reader->getEntity('IfcRoot');
         $IfcCostValue = $reader->getEntity('IfcCostValue');
         $ifcproduct = $reader->getEntity('IfcProduct');
-        
+        $ifcproductFull = $reader->getFullEntity('ifcproduct');
+                
         $this->assertNotNull($ifcwall);
         $this->assertNotNull($ifcroot);
         
@@ -84,6 +85,7 @@ class ReaderTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(2, count($ifcproduct->parameters));
         $this->assertEquals(8, count($reader->getSubtypesOf($ifcproduct)));
         
+        $this->assertEquals('IFCROOT.IFCOBJECTDEFINITION.IFCOBJECT.IFCPRODUCT', strtoupper($ifcproductFull->name));
        
     }
 

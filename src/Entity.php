@@ -20,4 +20,19 @@ class Entity {
         $this->name = $name;
     }
     
+    function merge(Entity $tomerge) {
+        $this->name .= "." . $tomerge->name;
+        $this->supertypeOf = null;
+        $this->abstractSupertypeOf = null;
+        $this->subtypeOf = null;
+        $this->parameters = array_merge_recursive($this->parameters, $tomerge->parameters);
+        $this->optionalParameters = array_merge_recursive($this->optionalParameters, $tomerge->optionalParameters);
+        $this->inverse = array_merge_recursive($this->inverse, $tomerge->inverse);
+        $this->where = array_merge_recursive($this->where, $tomerge->where);
+        $this->unique = array_merge_recursive($this->unique, $tomerge->unique);
+        
+        return $this;
+        
+    }
+    
 }

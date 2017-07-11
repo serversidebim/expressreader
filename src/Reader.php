@@ -207,6 +207,25 @@ class Reader {
         return null;
     }
 
+    public function getFullEntity(string $name) {
+        $name = strtoupper($name);
+        if ($ent = $this->getEntity($name)) {
+            $clone = clone $ent;
+            
+            if ($parent = $this->getSupertype($clone)) {
+                $parentname = $parent->name;
+                $parent = $this->getFullEntity($parentname);
+                if ($parent) {
+                    return $parent->merge($clone);
+                }
+                return $clone;
+            } else {
+                return $clone;
+            }
+        }
+        return;
+    }
+
     function getSubtypesOf(Entity $ent) {
         $subtypes = [];
         foreach ($ent->supertypeOf as $sup) {
@@ -221,22 +240,20 @@ class Reader {
         }
         return null;
     }
-    
+
     function isDirectSupertype(Entity $entity, Entity $direct) {
         return strtoupper($this->getSupertype($entity)->name) == strtoupper($direct->name);
     }
-    
+
     function isSubTypeOf(Entity $entity, Entity $super) {
         $parent = $this->getSupertype($entity);
         if ($parent) {
             if ($this->isDirectSupertype($entity, $super)) {
                 return true;
-            }
-            else {
+            } else {
                 return $this->isSubTypeOf($parent, $super);
             }
-        }
-        else {
+        } else {
             return false;
         }
     }
