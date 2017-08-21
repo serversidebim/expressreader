@@ -13,6 +13,7 @@ class Entity {
     public $parameters = [];
     public $optionalParameters = [];
     public $inverse = [];
+    public $derive = [];
     public $where = [];
     public $unique = [];
     
@@ -29,6 +30,7 @@ class Entity {
         $this->optionalParameters = array_merge_recursive($this->optionalParameters, $tomerge->optionalParameters);
         $this->inverse = array_merge_recursive($this->inverse, $tomerge->inverse);
         $this->where = array_merge_recursive($this->where, $tomerge->where);
+        $this->derive = array_merge_recursive($this->derive, $tomerge->derive);
         $this->unique = array_merge_recursive($this->unique, $tomerge->unique);
         
         return $this;

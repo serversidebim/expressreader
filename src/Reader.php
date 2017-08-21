@@ -6,16 +6,18 @@ use Serversidebim\ExpressReader\Type;
 use Serversidebim\ExpressReader\Entity;
 use Exception;
 
-class Reader {
+class Reader implements \JsonSerializable {
 
     private $schema = "";
     protected $types = [];
     protected $entities = [];
+    protected $functions = [];
+    protected $rules = [];
 
     function __construct() {
         
     }
-
+    
     /**
      * Parse an express file
      * @param string $filepath Path to the express definition file
@@ -30,6 +32,12 @@ class Reader {
 
         $this->entities = [];
         $this->parseEntities($contents);
+        
+        $this->functions = [];
+        $this->parseFunctions($contents);
+        
+        $this->rules = [];
+        $this->parseRules($contents);
 
         return $this;
     }
@@ -156,6 +164,17 @@ class Reader {
                         }
                     }
                 }
+                
+                // Now check DERIVE
+                if (preg_match("/DERIVE\W+(.*?)\n\s?[A-Z_]+(?:\r\n|$)/s", $matches[3][$key], $m)) {
+                    $ar = array_map('trim', explode(";\r\n", $m[1]));
+                    foreach ($ar as $k => $v) {
+                        if (!empty($v)) {
+                            $parts = array_map('trim', explode(":", $v, 2));
+                            $entity->derive[$parts[0]] = $parts[1];
+                        }
+                    }
+                }
 
                 // Now check WHERE
                 if (preg_match("/WHERE\W+(.*?)\n\s?([A-Z_]+)(?:\r\n|$)/s", $matches[3][$key], $m)) { // TODO WRONG!!
@@ -182,6 +201,34 @@ class Reader {
                 // TODO: parse functions?
                 // Add entity to express
                 $this->entities[strtoupper($matches[1][$key])] = $entity;
+                //var_dump($entity);
+            }
+        }
+    }
+    
+    public function parseFunctions($contents) { //TODO: this needs more intelligent parsing
+        $matches = array();
+
+        if (!preg_match_all("/FUNCTION ((\w+).*?)END_FUNCTION;/s", $contents, $matches) === FALSE) {
+
+            foreach ($matches[0] as $key => $value) {
+                
+                // add functions to this
+                $this->functions[strtoupper($matches[2][$key])] = $matches[1][$key];
+                //var_dump($entity);
+            }
+        }
+    }
+    
+    public function parseRules($contents) { //TODO: this needs more intelligent parsing
+        $matches = array();
+
+        if (!preg_match_all("/RULE ((\w+).*?)END_RULE;/s", $contents, $matches) === FALSE) {
+
+            foreach ($matches[0] as $key => $value) {
+                
+                // add functions to this
+                $this->rules[strtoupper($matches[2][$key])] = $matches[1][$key];
                 //var_dump($entity);
             }
         }
@@ -256,6 +303,15 @@ class Reader {
         } else {
             return false;
         }
+    }
+    
+    public function jsonSerialize() {
+        return [
+            "types"=>$this->types,
+            "entities"=>$this->entities,
+            "functions"=>$this->functions,
+            "rules"=>$this->rules,
+        ];
     }
 
 }
