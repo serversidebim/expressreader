@@ -17,6 +17,7 @@ class ReaderTest extends PHPUnit_Framework_TestCase {
         $reader = new Serversidebim\ExpressReader\Reader;
         $reader->parseExpress(__DIR__ . '/IFC4.exp');
         self::$reader = $reader;
+        //file_put_contents(__DIR__ . '/IFC4.ser', serialize($reader));
     }
 
     /**
@@ -86,7 +87,7 @@ class ReaderTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals(8, count($reader->getSubtypesOf($ifcproduct)));
         
         $this->assertEquals('IFCROOT.IFCOBJECTDEFINITION.IFCOBJECT.IFCPRODUCT', strtoupper($ifcproductFull->name));
-       
+        
     }
 
 }
