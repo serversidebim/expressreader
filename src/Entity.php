@@ -11,7 +11,6 @@ class Entity {
     public $abstractSupertypeOf = false;
     public $subtypeOf = null;
     public $parameters = [];
-    public $optionalParameters = [];
     public $inverse = [];
     public $derive = [];
     public $where = [];
