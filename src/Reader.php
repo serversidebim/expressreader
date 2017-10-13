@@ -132,7 +132,7 @@ class Reader implements \JsonSerializable {
                 }
 
                 // Now check the parameters
-                if (preg_match("/(.*?)\n\s?([A-Z_]+)\W/s", $matches[3][$key], $m)) {
+                if (preg_match("/(.*?)\n\s?[A-Z_]{2,}/s", $matches[3][$key], $m)) {
                     $params1 = explode(";", $m[1]);
                     $params2 = array();
                     $optional = array();
