@@ -8,11 +8,12 @@
  *
  *  @author yourname
  */
-class ReaderTest extends PHPUnit_Framework_TestCase {
-
+class ReaderTest extends \PHPUnit\Framework\TestCase
+{
     protected static $reader;
 
-    public static function setupBeforeClass() {
+    public static function setupBeforeClass()
+    {
         $reader = new Serversidebim\ExpressReader\Reader;
         $reader = new Serversidebim\ExpressReader\Reader;
         $reader->parseExpress(__DIR__ . '/IFC4.exp');
@@ -21,20 +22,21 @@ class ReaderTest extends PHPUnit_Framework_TestCase {
     }
 
     /**
-     * Just check if the YourClass has no syntax error 
+     * Just check if the YourClass has no syntax error
      *
      * This is just a simple check to make sure your library has no syntax error. This helps you troubleshoot
      * any typo before you even use this library in a real project.
      *
      */
-    public function testIsThereAnySyntaxError() {
+    public function testIsThereAnySyntaxError()
+    {
         $var = new Serversidebim\ExpressReader\Reader;
         $this->assertTrue(is_object($var));
         unset($var);
     }
 
-    public function testParseExpress() {
-
+    public function testParseExpress()
+    {
         $reader = self::$reader;
 
         $this->assertTrue(is_object($reader));
@@ -42,8 +44,8 @@ class ReaderTest extends PHPUnit_Framework_TestCase {
         $this->assertEquals($reader->getSchema(), "IFC4");
     }
 
-    public function testTypes() {
-
+    public function testTypes()
+    {
         $reader = self::$reader;
 
 
@@ -64,30 +66,29 @@ class ReaderTest extends PHPUnit_Framework_TestCase {
         $this->assertGreaterThan(0, count($type->where));
     }
 
-    public function testEntities() {
+    public function testEntities()
+    {
         $reader = self::$reader;
-        
-        $this->assertGreaterThan(0,count($reader->getEntities()));
-        
+
+        $this->assertCount(776, $reader->getEntities());
+
         $ifcwall = $reader->getEntity('IfcWall');
         $ifcbuildingelement = $reader->getEntity('IfcBuildingElement');
         $ifcroot = $reader->getEntity('IfcRoot');
         $IfcCostValue = $reader->getEntity('IfcCostValue');
         $ifcproduct = $reader->getEntity('IfcProduct');
         $ifcproductFull = $reader->getFullEntity('ifcproduct');
-                
+
         $this->assertNotNull($ifcwall);
         $this->assertNotNull($ifcroot);
-        
+
         $this->assertTrue($reader->isDirectSupertype($ifcwall, $ifcbuildingelement));
         $this->assertTrue($reader->isSubTypeOf($ifcwall, $ifcroot));
-        $this->assertFalse($reader->isSubTypeOf($IfcCostValue,$ifcroot));
-        
+        $this->assertFalse($reader->isSubTypeOf($IfcCostValue, $ifcroot));
+
         $this->assertEquals(2, count($ifcproduct->parameters));
         $this->assertEquals(8, count($reader->getSubtypesOf($ifcproduct)));
-        
-        $this->assertEquals('IFCROOT.IFCOBJECTDEFINITION.IFCOBJECT.IFCPRODUCT', strtoupper($ifcproductFull->name));
-        
-    }
 
+        $this->assertEquals('IFCROOT.IFCOBJECTDEFINITION.IFCOBJECT.IFCPRODUCT', strtoupper($ifcproductFull->name));
+    }
 }
