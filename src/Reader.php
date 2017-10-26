@@ -313,6 +313,18 @@ class Reader implements \JsonSerializable {
             return false;
         }
     }
+    
+    public function getParameters(Entity $entity){
+        return $entity->parameters;
+    }
+    
+    public function getParameter(Entity $entity, string $param) {
+        $parameters = $this->getParameters($entity);
+        if (key_exists($param, $parameters)) {
+            return $parameters[$param];
+        }
+        return null;
+    }
 
     public function jsonSerialize() {
         return [

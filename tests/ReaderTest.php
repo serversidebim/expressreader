@@ -8,7 +8,9 @@
  *
  *  @author yourname
  */
-class ReaderTest extends PHPUnit_Framework_TestCase {
+use PHPUnit\Framework\TestCase;
+
+class ReaderTest extends TestCase {
 
     protected static $reader;
 
@@ -66,28 +68,44 @@ class ReaderTest extends PHPUnit_Framework_TestCase {
 
     public function testEntities() {
         $reader = self::$reader;
-        
-        $this->assertGreaterThan(0,count($reader->getEntities()));
-        
+
+        $this->assertGreaterThan(0, count($reader->getEntities()));
+
         $ifcwall = $reader->getEntity('IfcWall');
         $ifcbuildingelement = $reader->getEntity('IfcBuildingElement');
         $ifcroot = $reader->getEntity('IfcRoot');
         $IfcCostValue = $reader->getEntity('IfcCostValue');
         $ifcproduct = $reader->getEntity('IfcProduct');
         $ifcproductFull = $reader->getFullEntity('ifcproduct');
-                
+
         $this->assertNotNull($ifcwall);
         $this->assertNotNull($ifcroot);
-        
+
         $this->assertTrue($reader->isDirectSupertype($ifcwall, $ifcbuildingelement));
         $this->assertTrue($reader->isSubTypeOf($ifcwall, $ifcroot));
-        $this->assertFalse($reader->isSubTypeOf($IfcCostValue,$ifcroot));
-        
+        $this->assertFalse($reader->isSubTypeOf($IfcCostValue, $ifcroot));
+
         $this->assertEquals(2, count($ifcproduct->parameters));
         $this->assertEquals(8, count($reader->getSubtypesOf($ifcproduct)));
-        
+
         $this->assertEquals('IFCROOT.IFCOBJECTDEFINITION.IFCOBJECT.IFCPRODUCT', strtoupper($ifcproductFull->name));
-        
     }
 
+    public function testParams() {
+        $reader = self::$reader;
+        $IfcMaterialLayerWithOffsets = $reader->getEntity('IfcMaterialLayerWithOffsets');
+        $IfcCartesianPointList3D = $reader->getEntity('IfcCartesianPointList3D');
+
+        $this->assertInternalType('array', $reader->getParameters($IfcMaterialLayerWithOffsets));
+        $this->assertNotNull('array', $reader->getParameter($IfcMaterialLayerWithOffsets, 'OffsetValues'));
+
+        $this->assertInternalType('array', $reader->getParameter($IfcCartesianPointList3D, 'CoordList')->type);
+
+        $typeOf = $reader->getParameter($IfcMaterialLayerWithOffsets, 'OffsetValues')->type['OF'];
+        $this->assertNotNull($reader->getTypes()[strtoupper($typeOf)]);
+
+        $IfcApprovalRelationship = $reader->getEntity('IfcApprovalRelationship');
+        $typeOfEntity = $reader->getParameter($IfcApprovalRelationship, 'RelatedApprovals')->type['OF'];
+        $this->assertNotNull($reader->getEntity($typeOfEntity));
+    }
 }
