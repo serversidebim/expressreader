@@ -8,13 +8,12 @@
  *
  *  @author yourname
  */
-use PHPUnit\Framework\TestCase;
-
-class ReaderTest extends TestCase {
-
+class ReaderTest extends \PHPUnit\Framework\TestCase
+{
     protected static $reader;
 
-    public static function setupBeforeClass() {
+    public static function setupBeforeClass()
+    {
         $reader = new Serversidebim\ExpressReader\Reader;
         $reader = new Serversidebim\ExpressReader\Reader;
         $reader->parseExpress(__DIR__ . '/IFC4.exp');
@@ -23,20 +22,21 @@ class ReaderTest extends TestCase {
     }
 
     /**
-     * Just check if the YourClass has no syntax error 
+     * Just check if the YourClass has no syntax error
      *
      * This is just a simple check to make sure your library has no syntax error. This helps you troubleshoot
      * any typo before you even use this library in a real project.
      *
      */
-    public function testIsThereAnySyntaxError() {
+    public function testIsThereAnySyntaxError()
+    {
         $var = new Serversidebim\ExpressReader\Reader;
         $this->assertTrue(is_object($var));
         unset($var);
     }
 
-    public function testParseExpress() {
-
+    public function testParseExpress()
+    {
         $reader = self::$reader;
 
         $this->assertTrue(is_object($reader));
@@ -44,8 +44,8 @@ class ReaderTest extends TestCase {
         $this->assertEquals($reader->getSchema(), "IFC4");
     }
 
-    public function testTypes() {
-
+    public function testTypes()
+    {
         $reader = self::$reader;
 
 
@@ -66,10 +66,11 @@ class ReaderTest extends TestCase {
         $this->assertGreaterThan(0, count($type->where));
     }
 
-    public function testEntities() {
+    public function testEntities()
+    {
         $reader = self::$reader;
 
-        $this->assertGreaterThan(0, count($reader->getEntities()));
+        $this->assertCount(776, $reader->getEntities());
 
         $ifcwall = $reader->getEntity('IfcWall');
         $ifcbuildingelement = $reader->getEntity('IfcBuildingElement');
@@ -91,7 +92,8 @@ class ReaderTest extends TestCase {
         $this->assertEquals('IFCROOT.IFCOBJECTDEFINITION.IFCOBJECT.IFCPRODUCT', strtoupper($ifcproductFull->name));
     }
 
-    public function testParams() {
+    public function testParams() 
+    {
         $reader = self::$reader;
         $IfcMaterialLayerWithOffsets = $reader->getEntity('IfcMaterialLayerWithOffsets');
         $IfcCartesianPointList3D = $reader->getEntity('IfcCartesianPointList3D');
