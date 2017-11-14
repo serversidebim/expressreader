@@ -2,6 +2,7 @@
 
 namespace Serversidebim\ExpressReader;
 
+use Serversidebim\ExpressReader\Param;
 use Serversidebim\ExpressReader\Type;
 use Serversidebim\ExpressReader\Entity;
 use Exception;
@@ -17,7 +18,7 @@ class Reader implements \JsonSerializable {
     function __construct() {
         
     }
-    
+
     /**
      * Parse an express file
      * @param string $filepath Path to the express definition file
@@ -32,10 +33,10 @@ class Reader implements \JsonSerializable {
 
         $this->entities = [];
         $this->parseEntities($contents);
-        
+
         $this->functions = [];
         $this->parseFunctions($contents);
-        
+
         $this->rules = [];
         $this->parseRules($contents);
 
@@ -132,7 +133,7 @@ class Reader implements \JsonSerializable {
                 }
 
                 // Now check the parameters
-                if (preg_match("/(.*?)\n\s?([A-Z_]+)\W/s", $matches[3][$key], $m)) {
+                if (preg_match("/(.*?)\n\s?[A-Z_]{2,}/s", $matches[3][$key], $m)) {
                     $params1 = explode(";", $m[1]);
                     $params2 = array();
                     $optional = array();
@@ -140,11 +141,19 @@ class Reader implements \JsonSerializable {
                         if (!empty($v)) {
                             $split = array_map("trim", explode(":", $v, 2));
                             if (isset($split[1])) {
-                                if (preg_match("/^(OPTIONAL\s+)?(.*?)$/", $split[1], $n)) {
-                                    $params2[$split[0]] = $n[2];
-                                    if (!empty($n[1])) {
-                                        array_push($optional, $split[0]);
+                                if (preg_match("/^([A-Z]*\s+)?(?:([A-Z]*)\s\[(.):(.)\])?(?:\sOF\s([A-Z]*)\s\[(.):(.)\])?(?:\sOF\s)?(\w*)$/", $split[1], $n)) {
+                                    $param = new Param($n[8]);
+                                    if (!empty($n[2])) {
+                                        $of = $n[8];
+                                        if (!empty($n[5])){
+                                            $of = $param->getCollection($n[5], $n[6], $n[7], $n[8]);
+                                        }
+                                        $param->setCollection($n[2], $n[3], $n[4], $of);
                                     }
+                                    if (!empty($n[1])) {
+                                        $param->setOptional(true);
+                                    }
+                                    $params2[$split[0]] = $param;
                                 }
                             }
                         }
@@ -164,7 +173,7 @@ class Reader implements \JsonSerializable {
                         }
                     }
                 }
-                
+
                 // Now check DERIVE
                 if (preg_match("/DERIVE\W+(.*?)\n\s?[A-Z_]+(?:\r\n|$)/s", $matches[3][$key], $m)) {
                     $ar = array_map('trim', explode(";\r\n", $m[1]));
@@ -205,28 +214,28 @@ class Reader implements \JsonSerializable {
             }
         }
     }
-    
+
     public function parseFunctions($contents) { //TODO: this needs more intelligent parsing
         $matches = array();
 
         if (!preg_match_all("/FUNCTION ((\w+).*?)END_FUNCTION;/s", $contents, $matches) === FALSE) {
 
             foreach ($matches[0] as $key => $value) {
-                
+
                 // add functions to this
                 $this->functions[strtoupper($matches[2][$key])] = $matches[1][$key];
                 //var_dump($entity);
             }
         }
     }
-    
+
     public function parseRules($contents) { //TODO: this needs more intelligent parsing
         $matches = array();
 
         if (!preg_match_all("/RULE ((\w+).*?)END_RULE;/s", $contents, $matches) === FALSE) {
 
             foreach ($matches[0] as $key => $value) {
-                
+
                 // add functions to this
                 $this->rules[strtoupper($matches[2][$key])] = $matches[1][$key];
                 //var_dump($entity);
@@ -258,7 +267,7 @@ class Reader implements \JsonSerializable {
         $name = strtoupper($name);
         if ($ent = $this->getEntity($name)) {
             $clone = clone $ent;
-            
+
             if ($parent = $this->getSupertype($clone)) {
                 $parentname = $parent->name;
                 $parent = $this->getFullEntity($parentname);
@@ -305,12 +314,24 @@ class Reader implements \JsonSerializable {
         }
     }
     
+    public function getParameters(Entity $entity){
+        return $entity->parameters;
+    }
+    
+    public function getParameter(Entity $entity, string $param) {
+        $parameters = $this->getParameters($entity);
+        if (key_exists($param, $parameters)) {
+            return $parameters[$param];
+        }
+        return null;
+    }
+
     public function jsonSerialize() {
         return [
-            "types"=>$this->types,
-            "entities"=>$this->entities,
-            "functions"=>$this->functions,
-            "rules"=>$this->rules,
+            "types" => $this->types,
+            "entities" => $this->entities,
+            "functions" => $this->functions,
+            "rules" => $this->rules,
         ];
     }
 

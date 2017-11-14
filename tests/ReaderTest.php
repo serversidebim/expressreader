@@ -91,4 +91,23 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
         $this->assertEquals('IFCROOT.IFCOBJECTDEFINITION.IFCOBJECT.IFCPRODUCT', strtoupper($ifcproductFull->name));
     }
+  
+    public function testParams() 
+    {
+        $reader = self::$reader;
+        $IfcMaterialLayerWithOffsets = $reader->getEntity('IfcMaterialLayerWithOffsets');
+        $IfcCartesianPointList3D = $reader->getEntity('IfcCartesianPointList3D');
+
+        $this->assertInternalType('array', $reader->getParameters($IfcMaterialLayerWithOffsets));
+        $this->assertNotNull('array', $reader->getParameter($IfcMaterialLayerWithOffsets, 'OffsetValues'));
+
+        $this->assertInternalType('array', $reader->getParameter($IfcCartesianPointList3D, 'CoordList')->type);
+
+        $typeOf = $reader->getParameter($IfcMaterialLayerWithOffsets, 'OffsetValues')->type['OF'];
+        $this->assertNotNull($reader->getTypes()[strtoupper($typeOf)]);
+
+        $IfcApprovalRelationship = $reader->getEntity('IfcApprovalRelationship');
+        $typeOfEntity = $reader->getParameter($IfcApprovalRelationship, 'RelatedApprovals')->type['OF'];
+        $this->assertNotNull($reader->getEntity($typeOfEntity));
+    }
 }
