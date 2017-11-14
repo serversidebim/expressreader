@@ -91,8 +91,8 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
         $this->assertEquals('IFCROOT.IFCOBJECTDEFINITION.IFCOBJECT.IFCPRODUCT', strtoupper($ifcproductFull->name));
     }
-  
-    public function testParams() 
+
+    public function testParams()
     {
         $reader = self::$reader;
         $IfcMaterialLayerWithOffsets = $reader->getEntity('IfcMaterialLayerWithOffsets');
@@ -109,5 +109,27 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
         $IfcApprovalRelationship = $reader->getEntity('IfcApprovalRelationship');
         $typeOfEntity = $reader->getParameter($IfcApprovalRelationship, 'RelatedApprovals')->type['OF'];
         $this->assertNotNull($reader->getEntity($typeOfEntity));
+    }
+
+    public function testLinksToEntities()
+    {
+        $reader = self::$reader;
+        $IfcBuildingStorey = $reader->getEntity('IfcBuildingStorey');
+        $result = $reader->linksToEntities($IfcBuildingStorey);
+        $this->assertTrue($result);
+
+        $IfcCartesionPoint = $reader->getEntity('IFCCARTESIANPOINT');
+        $result = $reader->linksToEntities($IfcCartesionPoint);
+        $this->assertFalse($result);
+
+        // Now check if this runs for each entity
+        $entities = $reader->getEntities();
+        foreach ($entities as $ent) {
+            try {
+                $check = $reader->linksToEntities($ent);
+            } catch (Exception $e) {
+                var_dump($ent->parameters);
+            }
+        }
     }
 }

@@ -7,23 +7,24 @@ use Serversidebim\ExpressReader\Type;
 use Serversidebim\ExpressReader\Entity;
 use Exception;
 
-class Reader implements \JsonSerializable {
-
+class Reader implements \JsonSerializable
+{
     private $schema = "";
     protected $types = [];
     protected $entities = [];
     protected $functions = [];
     protected $rules = [];
 
-    function __construct() {
-        
+    public function __construct()
+    {
     }
 
     /**
      * Parse an express file
      * @param string $filepath Path to the express definition file
      */
-    public function parseExpress($filepath) {
+    public function parseExpress($filepath)
+    {
         $contents = file_get_contents($filepath);
 
         $this->parseSchema($contents);
@@ -43,7 +44,8 @@ class Reader implements \JsonSerializable {
         return $this;
     }
 
-    private function parseSchema($contents) {
+    private function parseSchema($contents)
+    {
         $matches = array();
         if (preg_match("/^SCHEMA (.*?);/mi", $contents, $matches) == 1) {
             $this->schema = $matches[1];
@@ -52,11 +54,11 @@ class Reader implements \JsonSerializable {
         }
     }
 
-    private function parseTypes($contents) {
+    private function parseTypes($contents)
+    {
         $matches = array();
 
-        if (!preg_match_all("/TYPE\s+(\w+)\s=\s(.*?);.*?END_TYPE/s", $contents, $matches) === FALSE) {
-
+        if (!preg_match_all("/TYPE\s+(\w+)\s=\s(.*?);.*?END_TYPE/s", $contents, $matches) === false) {
             foreach ($matches[0] as $key => $value) {
                 $type = new Type($matches[1][$key]);
 
@@ -89,12 +91,10 @@ class Reader implements \JsonSerializable {
 
                 // Now check if there is a WHERE clause
                 if (preg_match("/WHERE.*?(\w.*?)END_TYPE/s", $value, $m)) {
-
                     $type->where = array();
                     $ar = array_map("trim", explode(";", $m[1]));
                     foreach ($ar as $a => $v) {
                         if (!empty($v)) {
-
                             $parts = array_map('trim', explode(":", $v, 2));
                             $type->where[$parts[0]] = $parts[1];
                         }
@@ -109,11 +109,11 @@ class Reader implements \JsonSerializable {
         }
     }
 
-    private function parseEntities($contents) {
+    private function parseEntities($contents)
+    {
         $matches = array();
 
-        if (!preg_match_all("/ENTITY (\w+)(.*?);(.*?END_ENTITY);/s", $contents, $matches) === FALSE) {
-
+        if (!preg_match_all("/ENTITY (\w+)(.*?);(.*?END_ENTITY);/s", $contents, $matches) === false) {
             foreach ($matches[0] as $key => $value) {
                 $entity = new Entity($matches[1][$key]);
 
@@ -145,7 +145,7 @@ class Reader implements \JsonSerializable {
                                     $param = new Param($n[8]);
                                     if (!empty($n[2])) {
                                         $of = $n[8];
-                                        if (!empty($n[5])){
+                                        if (!empty($n[5])) {
                                             $of = $param->getCollection($n[5], $n[6], $n[7], $n[8]);
                                         }
                                         $param->setCollection($n[2], $n[3], $n[4], $of);
@@ -215,11 +215,11 @@ class Reader implements \JsonSerializable {
         }
     }
 
-    public function parseFunctions($contents) { //TODO: this needs more intelligent parsing
+    public function parseFunctions($contents)
+    { //TODO: this needs more intelligent parsing
         $matches = array();
 
-        if (!preg_match_all("/FUNCTION ((\w+).*?)END_FUNCTION;/s", $contents, $matches) === FALSE) {
-
+        if (!preg_match_all("/FUNCTION ((\w+).*?)END_FUNCTION;/s", $contents, $matches) === false) {
             foreach ($matches[0] as $key => $value) {
 
                 // add functions to this
@@ -229,11 +229,11 @@ class Reader implements \JsonSerializable {
         }
     }
 
-    public function parseRules($contents) { //TODO: this needs more intelligent parsing
+    public function parseRules($contents)
+    { //TODO: this needs more intelligent parsing
         $matches = array();
 
-        if (!preg_match_all("/RULE ((\w+).*?)END_RULE;/s", $contents, $matches) === FALSE) {
-
+        if (!preg_match_all("/RULE ((\w+).*?)END_RULE;/s", $contents, $matches) === false) {
             foreach ($matches[0] as $key => $value) {
 
                 // add functions to this
@@ -243,19 +243,23 @@ class Reader implements \JsonSerializable {
         }
     }
 
-    public function getSchema() {
+    public function getSchema()
+    {
         return $this->schema;
     }
 
-    public function getTypes() {
+    public function getTypes()
+    {
         return $this->types;
     }
 
-    public function getEntities() {
+    public function getEntities()
+    {
         return $this->entities;
     }
 
-    public function getEntity(string $name) {
+    public function getEntity(string $name)
+    {
         $name = strtoupper($name);
         if (key_exists($name, $this->entities)) {
             return $this->entities[$name];
@@ -263,7 +267,8 @@ class Reader implements \JsonSerializable {
         return null;
     }
 
-    public function getFullEntity(string $name) {
+    public function getFullEntity(string $name)
+    {
         $name = strtoupper($name);
         if ($ent = $this->getEntity($name)) {
             $clone = clone $ent;
@@ -282,7 +287,13 @@ class Reader implements \JsonSerializable {
         return;
     }
 
-    function getSubtypesOf(Entity $ent) {
+    /**
+     * Get the subtypes of Entity
+     * @param  Entity $ent The entity to check
+     * @return Array
+     */
+    public function getSubtypesOf(Entity $ent)
+    {
         $subtypes = [];
         foreach ($ent->supertypeOf as $sup) {
             array_push($subtypes, $this->getEntity($sup));
@@ -290,18 +301,26 @@ class Reader implements \JsonSerializable {
         return $subtypes;
     }
 
-    function getSupertype(Entity $ent) {
+    /**
+     * Get the supertype of the Entity
+     * @param  Entity $ent The Entity to check
+     * @return Entity | null
+     */
+    public function getSupertype(Entity $ent)
+    {
         if ($ent->subtypeOf) {
             return $this->getEntity($ent->subtypeOf);
         }
         return null;
     }
 
-    function isDirectSupertype(Entity $entity, Entity $direct) {
+    public function isDirectSupertype(Entity $entity, Entity $direct)
+    {
         return strtoupper($this->getSupertype($entity)->name) == strtoupper($direct->name);
     }
 
-    function isSubTypeOf(Entity $entity, Entity $super) {
+    public function isSubTypeOf(Entity $entity, Entity $super)
+    {
         $parent = $this->getSupertype($entity);
         if ($parent) {
             if ($this->isDirectSupertype($entity, $super)) {
@@ -313,12 +332,14 @@ class Reader implements \JsonSerializable {
             return false;
         }
     }
-    
-    public function getParameters(Entity $entity){
+
+    public function getParameters(Entity $entity)
+    {
         return $entity->parameters;
     }
-    
-    public function getParameter(Entity $entity, string $param) {
+
+    public function getParameter(Entity $entity, string $param)
+    {
         $parameters = $this->getParameters($entity);
         if (key_exists($param, $parameters)) {
             return $parameters[$param];
@@ -326,7 +347,34 @@ class Reader implements \JsonSerializable {
         return null;
     }
 
-    public function jsonSerialize() {
+    /**
+     * Return true when the entity links to other entities
+     * @param  Entity $entity
+     * @return boolean
+     */
+    public function linksToEntities(Entity $entity)
+    {
+        $params = $entity->parameters;
+        foreach ($params as $param) {
+            $type = $param->type;
+            while (is_array($type)) {
+                $type = $type['OF'];
+            }
+
+            if (key_exists(strtoupper($type), $this->entities)) {
+                return true;
+            }
+        }
+
+        if ($super = $this->getSupertype($entity)) {
+            return $this->linksToEntities($super);
+        }
+
+        return false;
+    }
+
+    public function jsonSerialize()
+    {
         return [
             "types" => $this->types,
             "entities" => $this->entities,
@@ -334,5 +382,4 @@ class Reader implements \JsonSerializable {
             "rules" => $this->rules,
         ];
     }
-
 }
