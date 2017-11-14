@@ -27,6 +27,23 @@ class Reader implements \JsonSerializable
     {
         $contents = file_get_contents($filepath);
 
+        return $this->parse($contents);
+    }
+	
+	public function parseStream($stream) {
+		if (!is_resource($stream)) {
+			throw new Exception("Cannot parse invalid stream resource");
+		}
+		rewind($stream);
+		$contents = "";
+		while($line = fgets($stream)) {
+			$contents .= $line;
+		}
+		
+		return $this->parse($contents);
+	}
+	
+	public function parse(string $contents) {
         $this->parseSchema($contents);
 
         $this->types = [];
@@ -42,7 +59,7 @@ class Reader implements \JsonSerializable
         $this->parseRules($contents);
 
         return $this;
-    }
+	}
 
     private function parseSchema($contents)
     {
