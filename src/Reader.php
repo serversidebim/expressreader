@@ -29,21 +29,23 @@ class Reader implements \JsonSerializable
 
         return $this->parse($contents);
     }
-	
-	public function parseStream($stream) {
-		if (!is_resource($stream)) {
-			throw new Exception("Cannot parse invalid stream resource");
-		}
-		rewind($stream);
-		$contents = "";
-		while($line = fgets($stream)) {
-			$contents .= $line;
-		}
-		
-		return $this->parse($contents);
-	}
-	
-	public function parse(string $contents) {
+
+    public function parseStream($stream)
+    {
+        if (!is_resource($stream)) {
+            throw new Exception("Cannot parse invalid stream resource");
+        }
+        rewind($stream);
+        $contents = "";
+        while ($line = fgets($stream)) {
+            $contents .= $line;
+        }
+
+        return $this->parse($contents);
+    }
+
+    public function parse(string $contents)
+    {
         $this->parseSchema($contents);
 
         $this->types = [];
@@ -59,7 +61,7 @@ class Reader implements \JsonSerializable
         $this->parseRules($contents);
 
         return $this;
-	}
+    }
 
     private function parseSchema($contents)
     {
@@ -150,7 +152,7 @@ class Reader implements \JsonSerializable
                 }
 
                 // Now check the parameters
-                if (preg_match("/(.*?)\n\s?[A-Z_]{2,}/s", $matches[3][$key], $m)) {
+                if (preg_match("/(.*?)\n\s?[A-Z_]{2,}[\r\n;Y]/s", $matches[3][$key], $m)) {
                     $params1 = explode(";", $m[1]);
                     $params2 = array();
                     $optional = array();

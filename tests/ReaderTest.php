@@ -92,6 +92,15 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals('IFCROOT.IFCOBJECTDEFINITION.IFCOBJECT.IFCPRODUCT', strtoupper($ifcproductFull->name));
     }
 
+    public function testGetFullEntity()
+    {
+        //IfcRectangleProfileDef
+        $reader = self::$reader;
+
+        $entity = $reader->getEntity('IfcRectangleProfileDef');
+        $this->assertCount(2, $entity->parameters);
+    }
+
     public function testParams()
     {
         $reader = self::$reader;
