@@ -160,7 +160,7 @@ class Reader implements \JsonSerializable
                         if (!empty($v)) {
                             $split = array_map("trim", explode(":", $v, 2));
                             if (isset($split[1])) {
-                                if (preg_match("/^([A-Z]*\s+)?(?:([A-Z]*)\s\[(.):(.)\])?(?:\sOF\s([A-Z]*)\s\[(.):(.)\])?(?:\sOF\s)?(\w*)$/", $split[1], $n)) {
+                                if (preg_match("/^([A-Z]*\s+)?(?:([A-Z]*)\s\[(.):(.)\])?(?:\sOF\s([A-Z]*)\s\[(.):(.)\])?(?:\sOF\s)?(?:UNIQUE\s)?(\w*)$/", $split[1], $n)) {
                                     $param = new Param($n[8]);
                                     if (!empty($n[2])) {
                                         $of = $n[8];
