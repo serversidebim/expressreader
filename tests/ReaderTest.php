@@ -131,13 +131,21 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
         $result = $reader->linksToEntities($IfcCartesionPoint);
         $this->assertFalse($result);
 
+        $t = $reader->getType('IfcLayeredItem');
+
+        $IFCPRESENTATIONLAYERASSIGNMENT = $reader->getEntity('IFCPRESENTATIONLAYERASSIGNMENT');
+        $result = $reader->linksToEntities($IFCPRESENTATIONLAYERASSIGNMENT);
+        $this->assertTrue($result);
+
         // Now check if this runs for each entity
         $entities = $reader->getEntities();
         foreach ($entities as $ent) {
             try {
                 $check = $reader->linksToEntities($ent);
             } catch (Exception $e) {
+                var_dump($ent->name);
                 var_dump($ent->parameters);
+                throw $e;
             }
         }
     }

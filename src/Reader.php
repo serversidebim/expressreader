@@ -272,6 +272,15 @@ class Reader implements \JsonSerializable
         return $this->types;
     }
 
+    public function getType(string $name)
+    {
+        $name = strtoupper($name);
+        if (key_exists($name, $this->types)) {
+            return $this->types[$name];
+        }
+        return null;
+    }
+
     public function getEntities()
     {
         return $this->entities;
@@ -382,6 +391,18 @@ class Reader implements \JsonSerializable
 
             if (key_exists(strtoupper($type), $this->entities)) {
                 return true;
+            }
+
+            // else check if it's a select type
+            $t = $this->getType($type);
+            if ($t) {
+                if (strtoupper($t->type) == 'SELECT') {
+                    foreach ($t->values as $v) {
+                        if (key_exists(strtoupper($v), $this->entities)) {
+                            return true;
+                        }
+                    }
+                }
             }
         }
 
