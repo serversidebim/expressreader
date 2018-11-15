@@ -18,7 +18,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
         $reader = new Serversidebim\ExpressReader\Reader;
         $reader->parseExpress(__DIR__ . '/IFC4.exp');
         self::$reader = $reader;
-        //file_put_contents(__DIR__ . '/IFC4.ser', serialize($reader));
+        //file_put_contents(__DIR__ . '/IFC4.ser', json_encode($reader));
     }
 
     /**
@@ -64,6 +64,26 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
         $this->assertEquals($type->min, 3);
         $this->assertEquals($type->max, 4);
         $this->assertGreaterThan(0, count($type->where));
+
+        // Check some true values
+        $base = [
+          'BOOLEAN',
+          'REAL',
+          'BINARY',
+          'INTEGER',
+          'NUMBER',
+          'STRING',
+          'ENUMERATION',
+          'SELECT',
+          'LOGICAL',
+          'ENTITY',
+        ];
+
+        // All types should return a true value
+        foreach ($reader->getTypes() as $key => $value) {
+            $trueType = $value->getTrueType();
+            $this->assertTrue(in_array($trueType, $base));
+        }
     }
 
     public function testEntities()

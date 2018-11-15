@@ -79,7 +79,7 @@ class Reader implements \JsonSerializable
 
         if (!preg_match_all("/TYPE\s+(\w+)\s=\s(.*?);.*?END_TYPE/s", $contents, $matches) === false) {
             foreach ($matches[0] as $key => $value) {
-                $type = new Type($matches[1][$key]);
+                $type = new Type($matches[1][$key], $this);
 
                 // check if type is a single element
                 if (preg_match("/^(\w+)?$/s", $matches[2][$key])) {
@@ -272,6 +272,11 @@ class Reader implements \JsonSerializable
         return $this->types;
     }
 
+    /**
+     * Get the an IFC Type by name
+     * @param  string  $name Name of the Type
+     * @return Type|null
+     */
     public function getType(string $name)
     {
         $name = strtoupper($name);
