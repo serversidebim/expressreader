@@ -328,9 +328,11 @@ class Reader implements \JsonSerializable
     public function getSubtypesOf(Entity $ent)
     {
         $subtypes = [];
-        foreach ($ent->supertypeOf as $sup) {
-            array_push($subtypes, $this->getEntity($sup));
-        }
+		if (is_array($ent->supertypeOf)) {
+			foreach ($ent->supertypeOf as $sup) {
+				array_push($subtypes, $this->getEntity($sup));
+			}
+		}
         return $subtypes;
     }
 
