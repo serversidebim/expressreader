@@ -1,5 +1,8 @@
 <?php
 
+use PHPUnit\Framework\TestCase;
+use Serversidebim\ExpressReader\Reader;
+
 /**
  *  Corresponding Class to test YourClass class
  *
@@ -8,14 +11,13 @@
  *
  *  @author yourname
  */
-class ReaderTest extends \PHPUnit\Framework\TestCase
+class ReaderTest extends TestCase
 {
-    protected static $reader;
+    protected static Reader $reader;
 
-    public static function setupBeforeClass()
+    public static function setupBeforeClass() : void
     {
-        $reader = new Serversidebim\ExpressReader\Reader;
-        $reader = new Serversidebim\ExpressReader\Reader;
+        $reader = new Reader;
         $reader->parseExpress(__DIR__ . '/IFC4.exp');
         self::$reader = $reader;
         //file_put_contents(__DIR__ . '/IFC4.ser', json_encode($reader));
@@ -41,7 +43,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
         $this->assertTrue(is_object($reader));
 
-        $this->assertEquals($reader->getSchema(), "IFC4");
+        $this->assertEquals("IFC4", $reader->getSchema());
     }
 
     public function testTypes()
@@ -54,15 +56,15 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
 
         // Check some types
         $type = $reader->getTypes()[strtoupper('IfcDuctSegmentTypeEnum')];
-        $this->assertEquals($type->type, 'ENUMERATION');
+        $this->assertEquals('ENUMERATION', $type->type);
         $this->assertContains('USERDEFINED', $type->values);
 
         //TYPE IfcCompoundPlaneAngleMeasure = LIST [3:4] OF INTEGER;
         $type = $reader->getTypes()[strtoupper('IfcCompoundPlaneAngleMeasure')];
-        $this->assertEquals($type->type, 'LIST');
-        $this->assertEquals($type->of, 'INTEGER');
-        $this->assertEquals($type->min, 3);
-        $this->assertEquals($type->max, 4);
+        $this->assertEquals('LIST', $type->type);
+        $this->assertEquals('INTEGER', $type->of);
+        $this->assertEquals(3, $type->min);
+        $this->assertEquals(4, $type->max);
         $this->assertGreaterThan(0, count($type->where));
 
         // Check some true values
@@ -80,7 +82,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
         ];
 
         // All types should return a true value
-        foreach ($reader->getTypes() as $key => $value) {
+        foreach ($reader->getTypes() as $value) {
             $trueType = $value->getTrueType();
             $this->assertTrue(in_array($trueType, $base));
         }
@@ -106,8 +108,8 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
         $this->assertTrue($reader->isSubTypeOf($ifcwall, $ifcroot));
         $this->assertFalse($reader->isSubTypeOf($IfcCostValue, $ifcroot));
 
-        $this->assertEquals(2, count($ifcproduct->parameters));
-        $this->assertEquals(8, count($reader->getSubtypesOf($ifcproduct)));
+        $this->assertCount(2, $ifcproduct->parameters);
+        $this->assertCount(8, $reader->getSubtypesOf($ifcproduct));
 
         $this->assertEquals('IFCROOT.IFCOBJECTDEFINITION.IFCOBJECT.IFCPRODUCT', strtoupper($ifcproductFull->name));
     }
@@ -127,10 +129,10 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
         $IfcMaterialLayerWithOffsets = $reader->getEntity('IfcMaterialLayerWithOffsets');
         $IfcCartesianPointList3D = $reader->getEntity('IfcCartesianPointList3D');
 
-        $this->assertInternalType('array', $reader->getParameters($IfcMaterialLayerWithOffsets));
-        $this->assertNotNull('array', $reader->getParameter($IfcMaterialLayerWithOffsets, 'OffsetValues'));
+        $this->assertIsArray($reader->getParameters($IfcMaterialLayerWithOffsets));
+        $this->assertNotNull($reader->getParameter($IfcMaterialLayerWithOffsets, 'OffsetValues'));
 
-        $this->assertInternalType('array', $reader->getParameter($IfcCartesianPointList3D, 'CoordList')->type);
+        $this->assertIsArray($reader->getParameter($IfcCartesianPointList3D, 'CoordList')->type);
 
         $typeOf = $reader->getParameter($IfcMaterialLayerWithOffsets, 'OffsetValues')->type['OF'];
         $this->assertNotNull($reader->getTypes()[strtoupper($typeOf)]);
@@ -140,6 +142,9 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
         $this->assertNotNull($reader->getEntity($typeOfEntity));
     }
 
+    /**
+     * @throws Exception
+     */
     public function testLinksToEntities()
     {
         $reader = self::$reader;
@@ -151,8 +156,6 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
         $result = $reader->linksToEntities($IfcCartesionPoint);
         $this->assertFalse($result);
 
-        $t = $reader->getType('IfcLayeredItem');
-
         $IFCPRESENTATIONLAYERASSIGNMENT = $reader->getEntity('IFCPRESENTATIONLAYERASSIGNMENT');
         $result = $reader->linksToEntities($IFCPRESENTATIONLAYERASSIGNMENT);
         $this->assertTrue($result);
@@ -161,7 +164,7 @@ class ReaderTest extends \PHPUnit\Framework\TestCase
         $entities = $reader->getEntities();
         foreach ($entities as $ent) {
             try {
-                $check = $reader->linksToEntities($ent);
+                $reader->linksToEntities($ent);
             } catch (Exception $e) {
                 var_dump($ent->name);
                 var_dump($ent->parameters);

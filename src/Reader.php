@@ -2,18 +2,19 @@
 
 namespace Serversidebim\ExpressReader;
 
-use Serversidebim\ExpressReader\Param;
-use Serversidebim\ExpressReader\Type;
-use Serversidebim\ExpressReader\Entity;
 use Exception;
+use JetBrains\PhpStorm\ArrayShape;
+use JetBrains\PhpStorm\Pure;
+use JsonSerializable;
+use ReturnTypeWillChange;
 
-class Reader implements \JsonSerializable
+class Reader implements JsonSerializable
 {
-    private $schema = "";
-    protected $types = [];
-    protected $entities = [];
-    protected $functions = [];
-    protected $rules = [];
+    private string $schema = "";
+    protected array $types = [];
+    protected array $entities = [];
+    protected array $functions = [];
+    protected array $rules = [];
 
     public function __construct()
     {
@@ -22,15 +23,21 @@ class Reader implements \JsonSerializable
     /**
      * Parse an express file
      * @param string $filepath Path to the express definition file
+     * @throws Exception
+     * @throws Exception
+     * @throws Exception
      */
-    public function parseExpress($filepath)
+    public function parseExpress(string $filepath): static
     {
         $contents = file_get_contents($filepath);
 
         return $this->parse($contents);
     }
 
-    public function parseStream($stream)
+    /**
+     * @throws Exception
+     */
+    public function parseStream($stream): static
     {
         if (!is_resource($stream)) {
             throw new Exception("Cannot parse invalid stream resource");
@@ -44,7 +51,10 @@ class Reader implements \JsonSerializable
         return $this->parse($contents);
     }
 
-    public function parse(string $contents)
+    /**
+     * @throws Exception
+     */
+    public function parse(string $contents): static
     {
         $this->parseSchema($contents);
 
@@ -63,6 +73,9 @@ class Reader implements \JsonSerializable
         return $this;
     }
 
+    /**
+     * @throws Exception
+     */
     private function parseSchema($contents)
     {
         $matches = array();
@@ -84,35 +97,32 @@ class Reader implements \JsonSerializable
                 // check if type is a single element
                 if (preg_match("/^(\w+)?$/s", $matches[2][$key])) {
                     $type->type = $matches[2][$key];
-                }
-                // check for LIST, ARRAY or SET
-                elseif (preg_match("/^(\w+)\s?\[([\d\?]+):([\d\?]+)\]\sOF\s(\w+)/", $matches[2][$key], $m)) {
+                } // check for LIST, ARRAY or SET
+                elseif (preg_match("/^(\w+)\s?\[([\d?]+):([\d?]+)]\sOF\s(\w+)/", $matches[2][$key], $m)) {
                     $type->type = $m[1];
                     $type->min = $m[2];
                     $type->max = $m[3];
                     $type->of = $m[4];
-                }
-                // check STRING with length / fixed
+                } // check STRING with length / fixed
                 elseif (preg_match("/STRING\((\d+)\)(\s(FIXED))?/", $matches[2][$key], $m)) {
                     $type->type = "STRING";
                     $type->length = $m[1];
                     if (count($m) == 4) {
                         $type->fixed = true;
                     }
-                }
-                // ENUMERATION or SELECT
+                } // ENUMERATION or SELECT
                 elseif (preg_match("/(ENUMERATION|SELECT).*?\((.*?)\)/s", $matches[2][$key], $m)) {
                     $type->type = $m[1];
                     $type->values = array_map('trim', explode(",", $m[2]));
-                } else {
+                } //else {
                     //echo "Could not interpret ".$matches[1][$key] . "\n";
-                }
+                //}
 
                 // Now check if there is a WHERE clause
                 if (preg_match("/WHERE.*?(\w.*?)END_TYPE/s", $value, $m)) {
                     $type->where = array();
                     $ar = array_map("trim", explode(";", $m[1]));
-                    foreach ($ar as $a => $v) {
+                    foreach ($ar as $v) {
                         if (!empty($v)) {
                             $parts = array_map('trim', explode(":", $v, 2));
                             $type->where[$parts[0]] = $parts[1];
@@ -156,11 +166,11 @@ class Reader implements \JsonSerializable
                     $params1 = explode(";", $m[1]);
                     $params2 = array();
                     $optional = array();
-                    foreach ($params1 as $k => $v) {
+                    foreach ($params1 as $v) {
                         if (!empty($v)) {
                             $split = array_map("trim", explode(":", $v, 2));
                             if (isset($split[1])) {
-                                if (preg_match("/^([A-Z]*\s+)?(?:([A-Z]*)\s\[(.):(.)\])?(?:\sOF\s([A-Z]*)\s\[(.):(.)\])?(?:\sOF\s)?(?:UNIQUE\s)?(\w*)$/", $split[1], $n)) {
+                                if (preg_match("/^([A-Z]*\s+)?(?:([A-Z]*)\s\[(.):(.)])?(?:\sOF\s([A-Z]*)\s\[(.):(.)])?(?:\sOF\s)?(?:UNIQUE\s)?(\w*)$/", $split[1], $n)) {
                                     $param = new Param($n[8]);
                                     if (!empty($n[2])) {
                                         $of = $n[8];
@@ -185,7 +195,7 @@ class Reader implements \JsonSerializable
                 // INVERSE\W+(.*?)\n\s?([A-Z_]+)\W
                 if (preg_match("/INVERSE\W+(.*?)\n\s?[A-Z_]+(?:\r\n|$)/s", $matches[3][$key], $m)) {
                     $ar = array_map('trim', explode(";\r\n", $m[1]));
-                    foreach ($ar as $k => $v) {
+                    foreach ($ar as $v) {
                         if (!empty($v)) {
                             $parts = array_map('trim', explode(":", $v, 2));
                             $entity->inverse[$parts[0]] = $parts[1];
@@ -196,7 +206,7 @@ class Reader implements \JsonSerializable
                 // Now check DERIVE
                 if (preg_match("/DERIVE\W+(.*?)\n\s?[A-Z_]+(?:\r\n|$)/s", $matches[3][$key], $m)) {
                     $ar = array_map('trim', explode(";\r\n", $m[1]));
-                    foreach ($ar as $k => $v) {
+                    foreach ($ar as $v) {
                         if (!empty($v)) {
                             $parts = array_map('trim', explode(":", $v, 2));
                             $entity->derive[$parts[0]] = $parts[1];
@@ -207,7 +217,7 @@ class Reader implements \JsonSerializable
                 // Now check WHERE
                 if (preg_match("/WHERE\W+(.*?)\n\s?([A-Z_]+)(?:\r\n|$)/s", $matches[3][$key], $m)) { // TODO WRONG!!
                     $ar = array_map('trim', explode(";\r\n", $m[1]));
-                    foreach ($ar as $k => $v) {
+                    foreach ($ar as $v) {
                         if (!empty($v)) {
                             $parts = array_map('trim', explode(":", $v, 2));
                             $entity->where[$parts[0]] = $parts[1];
@@ -218,7 +228,7 @@ class Reader implements \JsonSerializable
                 // Now check UNIQUE
                 if (preg_match("/UNIQUE\r\n\W+(.*?)\n\s?([A-Z_]+)(?:\r\n|$)/s", $matches[3][$key], $m)) { // TODO WRONG!!
                     $ar = array_map('trim', explode(";", $m[1]));
-                    foreach ($ar as $k => $v) {
+                    foreach ($ar as $v) {
                         if (!empty($v)) {
                             $parts = array_map('trim', explode(":", $v, 2));
                             $entity->unique[$parts[0]] = $parts[1];
@@ -262,19 +272,19 @@ class Reader implements \JsonSerializable
         }
     }
 
-    public function getSchema()
+    public function getSchema(): string
     {
         return $this->schema;
     }
 
-    public function getTypes()
+    public function getTypes(): array
     {
         return $this->types;
     }
 
     /**
-     * Get the an IFC Type by name
-     * @param  string  $name Name of the Type
+     * Get the IFC Type by name
+     * @param string $name Name of the Type
      * @return Type|null
      */
     public function getType(string $name)
@@ -286,7 +296,7 @@ class Reader implements \JsonSerializable
         return null;
     }
 
-    public function getEntities()
+    public function getEntities(): array
     {
         return $this->entities;
     }
@@ -307,41 +317,39 @@ class Reader implements \JsonSerializable
             $clone = clone $ent;
 
             if ($parent = $this->getSupertype($clone)) {
-                $parentname = $parent->name;
-                $parent = $this->getFullEntity($parentname);
+                $parentName = $parent->name;
+                $parent = $this->getFullEntity($parentName);
                 if ($parent) {
                     return $parent->merge($clone);
                 }
-                return $clone;
-            } else {
-                return $clone;
             }
+            return $clone;
         }
-        return;
+
+        return null;
     }
 
     /**
      * Get the subtypes of Entity
-     * @param  Entity $ent The entity to check
-     * @return Array
+     * @param Entity $ent The entity to check
      */
     public function getSubtypesOf(Entity $ent)
     {
         $subtypes = [];
-		if (is_array($ent->supertypeOf)) {
-			foreach ($ent->supertypeOf as $sup) {
-				array_push($subtypes, $this->getEntity($sup));
-			}
-		}
+        if (is_array($ent->supertypeOf)) {
+            foreach ($ent->supertypeOf as $sup) {
+                $subtypes[] = $this->getEntity($sup);
+            }
+        }
         return $subtypes;
     }
 
     /**
      * Get the supertype of the Entity
-     * @param  Entity $ent The Entity to check
+     * @param Entity $ent The Entity to check
      * @return Entity | null
      */
-    public function getSupertype(Entity $ent)
+    public function getSupertype(Entity $ent): ?Entity
     {
         if ($ent->subtypeOf) {
             return $this->getEntity($ent->subtypeOf);
@@ -349,12 +357,12 @@ class Reader implements \JsonSerializable
         return null;
     }
 
-    public function isDirectSupertype(Entity $entity, Entity $direct)
+    public function isDirectSupertype(Entity $entity, Entity $direct): bool
     {
         return strtoupper($this->getSupertype($entity)->name) == strtoupper($direct->name);
     }
 
-    public function isSubTypeOf(Entity $entity, Entity $super)
+    public function isSubTypeOf(Entity $entity, Entity $super): bool
     {
         $parent = $this->getSupertype($entity);
         if ($parent) {
@@ -368,12 +376,12 @@ class Reader implements \JsonSerializable
         }
     }
 
-    public function getParameters(Entity $entity)
+    public function getParameters(Entity $entity): array
     {
         return $entity->parameters;
     }
 
-    public function getParameter(Entity $entity, string $param)
+    #[Pure] public function getParameter(Entity $entity, string $param)
     {
         $parameters = $this->getParameters($entity);
         if (key_exists($param, $parameters)) {
@@ -384,10 +392,10 @@ class Reader implements \JsonSerializable
 
     /**
      * Return true when the entity links to other entities
-     * @param  Entity $entity
+     * @param Entity $entity
      * @return boolean
      */
-    public function linksToEntities(Entity $entity)
+    public function linksToEntities(Entity $entity): bool
     {
         $params = $entity->parameters;
         foreach ($params as $param) {
@@ -420,7 +428,7 @@ class Reader implements \JsonSerializable
         return false;
     }
 
-    public function jsonSerialize()
+    #[ReturnTypeWillChange] #[ArrayShape(["types" => "array", "entities" => "array", "functions" => "array", "rules" => "array"])] public function jsonSerialize(): array
     {
         return [
             "types" => $this->types,

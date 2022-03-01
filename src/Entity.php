@@ -2,10 +2,9 @@
 
 namespace Serversidebim\ExpressReader;
 
-use Serversidebim\ExpressReader\Reader;
+class Entity
+{
 
-class Entity {
-  
     public $name;
     public $supertypeOf = [];
     public $abstractSupertypeOf = false;
@@ -15,25 +14,28 @@ class Entity {
     public $derive = [];
     public $where = [];
     public $unique = [];
-    
-    function __construct(string $name) {
+    public array $optionalParameters = [];
+
+    function __construct(string $name)
+    {
         $this->name = $name;
     }
-    
-    function merge(Entity $tomerge) {
-        $this->name .= "." . $tomerge->name;
+
+    function merge(Entity $toMerge)
+    {
+        $this->name .= "." . $toMerge->name;
         $this->supertypeOf = null;
         $this->abstractSupertypeOf = null;
         $this->subtypeOf = null;
-        $this->parameters = array_merge_recursive($this->parameters, $tomerge->parameters);
-        $this->optionalParameters = array_merge_recursive($this->optionalParameters, $tomerge->optionalParameters);
-        $this->inverse = array_merge_recursive($this->inverse, $tomerge->inverse);
-        $this->where = array_merge_recursive($this->where, $tomerge->where);
-        $this->derive = array_merge_recursive($this->derive, $tomerge->derive);
-        $this->unique = array_merge_recursive($this->unique, $tomerge->unique);
-        
+        $this->parameters = array_merge_recursive($this->parameters, $toMerge->parameters);
+        $this->optionalParameters = array_merge_recursive($this->optionalParameters, $toMerge->optionalParameters);
+        $this->inverse = array_merge_recursive($this->inverse, $toMerge->inverse);
+        $this->where = array_merge_recursive($this->where, $toMerge->where);
+        $this->derive = array_merge_recursive($this->derive, $toMerge->derive);
+        $this->unique = array_merge_recursive($this->unique, $toMerge->unique);
+
         return $this;
-        
+
     }
-    
+
 }

@@ -8,25 +8,31 @@
 
 namespace Serversidebim\ExpressReader;
 
+use JetBrains\PhpStorm\ArrayShape;
+
 /**
  * Description of Param
  *
  * @author Stam4
  */
-class Param {
+class Param
+{
 
     public $type = "";
-    public $optional = false;
+    public bool $optional = false;
 
-    function __construct(string $type) {
+    function __construct(string $type)
+    {
         $this->type = $type;
     }
 
-    public function setCollection(string $type, $min, $max, $of) {
+    public function setCollection(string $type, $min, $max, $of)
+    {
         $this->type = $this->getCollection($type, $min, $max, $of);
     }
 
-    public function getCollection($type, $min, $max, $of) {
+    #[ArrayShape(['KIND' => "", 'MIN' => "int|null", 'MAX' => "int|null", 'OF' => ""])] public function getCollection($type, $min, $max, $of): array
+    {
         return array(
             'KIND' => $type,
             'MIN' => ($min === '?' ? null : (int)$min),
@@ -34,8 +40,9 @@ class Param {
             'OF' => $of
         );
     }
-    
-    public function setOptional($boolean = FALSE){
+
+    public function setOptional($boolean = FALSE)
+    {
         $this->optional = $boolean;
     }
 }

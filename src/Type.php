@@ -26,7 +26,7 @@ class Type
      * Get the true type of the Type
      * @return string BOOLEAN|REAL|BINARY|INTEGER|NUMBER|STRING|ENUMERATION|LOGICAL|SELECT|ENTITY
      */
-    public function getTrueType()
+    public function getTrueType(): ?string
     {
         $base = [
         'BOOLEAN',
@@ -64,7 +64,7 @@ class Type
             if ($parentType) {
                 return $parentType->getTrueType();
             } else {
-                return;
+                return null;
             }
         }
 
