@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection ALL */
 
 namespace Serversidebim\ExpressReader;
 
@@ -97,13 +97,13 @@ class Reader implements JsonSerializable
                 } // check for LIST, ARRAY or SET
                 elseif (preg_match("/^(\w+)\s?\[([\d?]+):([\d?]+)]\sOF\s(\w+)/", $matches[2][$key], $m)) {
                     $type->type = $m[1];
-                    $type->min = $m[2];
-                    $type->max = $m[3];
+                    $type->min = intval($m[2]);
+                    $type->max = intval($m[3]);
                     $type->of = $m[4];
                 } // check STRING with length / fixed
                 elseif (preg_match("/STRING\((\d+)\)(\s(FIXED))?/", $matches[2][$key], $m)) {
                     $type->type = "STRING";
-                    $type->length = $m[1];
+                    $type->length = intval($m[1]);
                     if (count($m) == 4) {
                         $type->fixed = true;
                     }

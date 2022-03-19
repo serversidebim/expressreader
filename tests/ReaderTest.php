@@ -1,4 +1,4 @@
-<?php
+<?php /** @noinspection ALL */
 
 use PHPUnit\Framework\TestCase;
 use Serversidebim\ExpressReader\Reader;
