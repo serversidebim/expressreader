@@ -15,6 +15,9 @@ class ReaderTest extends TestCase
 {
     protected static Reader $reader;
 
+    /**
+     * @throws Exception
+     */
     public static function setupBeforeClass() : void
     {
         $reader = new Reader;
@@ -29,6 +32,7 @@ class ReaderTest extends TestCase
      * This is just a simple check to make sure your library has no syntax error. This helps you troubleshoot
      * any typo before you even use this library in a real project.
      *
+     * @noinspection PhpConditionAlreadyCheckedInspection
      */
     public function testIsThereAnySyntaxError()
     {

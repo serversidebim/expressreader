@@ -21,7 +21,7 @@ class Entity
         $this->name = $name;
     }
 
-    function merge(Entity $toMerge)
+    function merge(Entity $toMerge): Entity
     {
         $this->name .= "." . $toMerge->name;
         $this->supertypeOf = null;

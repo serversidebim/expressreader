@@ -3,10 +3,7 @@
 namespace Serversidebim\ExpressReader;
 
 use Exception;
-use JetBrains\PhpStorm\ArrayShape;
-use JetBrains\PhpStorm\Pure;
 use JsonSerializable;
-use ReturnTypeWillChange;
 
 class Reader implements JsonSerializable
 {
@@ -27,7 +24,7 @@ class Reader implements JsonSerializable
      * @throws Exception
      * @throws Exception
      */
-    public function parseExpress(string $filepath): static
+    public function parseExpress(string $filepath): Reader
     {
         $contents = file_get_contents($filepath);
 
@@ -37,7 +34,7 @@ class Reader implements JsonSerializable
     /**
      * @throws Exception
      */
-    public function parseStream($stream): static
+    public function parseStream($stream): Reader
     {
         if (!is_resource($stream)) {
             throw new Exception("Cannot parse invalid stream resource");
@@ -54,7 +51,7 @@ class Reader implements JsonSerializable
     /**
      * @throws Exception
      */
-    public function parse(string $contents): static
+    public function parse(string $contents): Reader
     {
         $this->parseSchema($contents);
 
@@ -287,7 +284,7 @@ class Reader implements JsonSerializable
      * @param string $name Name of the Type
      * @return Type|null
      */
-    public function getType(string $name)
+    public function getType(string $name): ?Type
     {
         $name = strtoupper($name);
         if (key_exists($name, $this->types)) {
@@ -333,7 +330,7 @@ class Reader implements JsonSerializable
      * Get the subtypes of Entity
      * @param Entity $ent The entity to check
      */
-    public function getSubtypesOf(Entity $ent)
+    public function getSubtypesOf(Entity $ent): array
     {
         $subtypes = [];
         if (is_array($ent->supertypeOf)) {
@@ -381,7 +378,7 @@ class Reader implements JsonSerializable
         return $entity->parameters;
     }
 
-    #[Pure] public function getParameter(Entity $entity, string $param)
+    public function getParameter(Entity $entity, string $param)
     {
         $parameters = $this->getParameters($entity);
         if (key_exists($param, $parameters)) {
@@ -428,7 +425,7 @@ class Reader implements JsonSerializable
         return false;
     }
 
-    #[ReturnTypeWillChange] #[ArrayShape(["types" => "array", "entities" => "array", "functions" => "array", "rules" => "array"])] public function jsonSerialize(): array
+    public function jsonSerialize(): array
     {
         return [
             "types" => $this->types,

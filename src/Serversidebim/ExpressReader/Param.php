@@ -8,8 +8,6 @@
 
 namespace Serversidebim\ExpressReader;
 
-use JetBrains\PhpStorm\ArrayShape;
-
 /**
  * Description of Param
  *
@@ -31,7 +29,7 @@ class Param
         $this->type = $this->getCollection($type, $min, $max, $of);
     }
 
-    #[ArrayShape(['KIND' => "", 'MIN' => "int|null", 'MAX' => "int|null", 'OF' => ""])] public function getCollection($type, $min, $max, $of): array
+    public function getCollection($type, $min, $max, $of): array
     {
         return array(
             'KIND' => $type,
